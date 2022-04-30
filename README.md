@@ -21,6 +21,10 @@ This Project is Related to Project Based Learning Programe running by Army Insti
   
   <h3>Contribution is only allowed for : </h3>
   
+  <h4>Please Don't push anything in main branch</h4>
+  
+  <h4>Make your own new branch and then push the code </h4>
+  
   1. <a href="https://github.com/ankush156">ankush156</a>
   
   2. <a href="https://github.com/AryanDeswal">AryanDeswal</a>
