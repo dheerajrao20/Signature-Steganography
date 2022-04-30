@@ -70,6 +70,31 @@ git clone https://github.com/your_username/Signature-Steganography
 cd Signature-Steganography
 ```
 
-**4.** AND there is the project running in your browser.
+**4.** Install **Virtual environment** in current directory :
+
+```
+pip install virtualenv
+```
+
+**5.** Initialise **Virtual environment** in current directory :
+
+```
+virtualenv venv
+```
+
+**6.** Activate **Virtual environment** in current directory :
+
+```
+venv\scripts\activate
+```
+
+**7.** Try to **Run** the project :
+
+```
+python manage.py runserver
+```
+
+
+**8.** AND there is the project running in your browser.
 
 <h1 align="center">🎉🎉 **_HAPPY CONTRIBUTING!_** 🎉🎉 </h1>
