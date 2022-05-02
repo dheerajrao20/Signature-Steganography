@@ -8,6 +8,9 @@ Signature Steganography is a technique for allowing people to silently hide his 
 
 This Project is Related to Project Based Learning Programe running by Army Institute of Technology.
 
+<h2>Design link for collecting images </h2>
+<a href="https://www.canva.com/design/DAE_hMoHv8I/pKWztFSVJanwLTIkmRbd4Q/edit?utm_content=DAE_hMoHv8I&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton"> Click here to redirect yourself to canva</a>
+
 
 <h2 align="left"> Tech Stacks :</h2>
 <p align="left"> <a href="https://www.w3.org/html/" target="_blank" rel="noreferrer"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/html5/html5-original-wordmark.svg" alt="html5" width="80" height="80"/><a href="https://www.w3schools.com/css/" target="_blank" rel="noreferrer"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/css3/css3-original-wordmark.svg" alt="css3" width="80" height="80"/> </a><a href="https://www.w3schools.com/python/" target="_blank" rel="noreferrer"> <img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/python/python-original-wordmark.svg" alt="css3" width="80" height="70"/> </a><a href="https://www.w3schools.com/python/" target="_blank" rel="noreferrer"> <img src="https://logos-download.com/wp-content/uploads/2019/06/Django_Logo.png" alt="css3" width="100" height="50"/> </a>
