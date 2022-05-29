@@ -1,3 +1,8 @@
+<h4>⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️WARNING⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️⚠️<h4/>
+**Front-end guys**
+<br/>
+Don't touch **MEDIA** folder, Use **Static** folder for css and images used
+
 <h1 align="center">Hi 👋, I'm Dheeraj Rao</h1>
 <h3 align="center">A passionate Web developer from India</h3>
 
