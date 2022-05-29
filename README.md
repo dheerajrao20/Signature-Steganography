@@ -94,8 +94,17 @@ virtualenv venv
 ```
 venv\scripts\activate
 ```
+**7.** Install **Django** inside virtual enviornment :
 
-**7.** Try to **Run** the project :
+```
+pip install django
+```
+**8.** Install **pillow** library inside django for image validation :
+
+```
+pip install pillow
+```
+**9.** Try to **Run** the project :
 
 ```
 python manage.py runserver
