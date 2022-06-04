@@ -1,3 +1,4 @@
+from fileinput import filename
 from django.shortcuts import render
 from .forms import ExtImageForm
 from importlib.metadata import metadata
@@ -93,7 +94,10 @@ def extract_data(emb_image, passcode):
 
     indx =30
     temp = []
+
+    
     file_handle = open(file_name, 'wb')
+    
 
 
     while indx < qty_to_extract:
@@ -107,8 +111,12 @@ def extract_data(emb_image, passcode):
 
         file_handle.write(int.to_bytes(x,1,"big"))
         indx+=1
+    file_handle.close()
 
-    text=file_handle.readline[0]
+    
+    file_handle = open(file_name, 'r')
+    text=file_handle.read()
+    print(text)
     file_handle.close()
     return text
 
@@ -116,18 +124,19 @@ def extract_data(emb_image, passcode):
 
 
 def extract(request):
+    dir_path = r'.//media//extimages//'
+    clean_dir(dir_path)
     form2 = ExtImageForm(request.POST, request.FILES)
     if request.method == 'POST':
         if form2.is_valid():
             form2.save()
             
             #--------------------------------------------
-            dir_path = r'.//media//extimages//'
             enc_img_path = dir_path+img_names(dir_path)[0]   #png is necessary for decryption to work
             password = form2.cleaned_data['Password']
 
             text=extract_data(enc_img_path,password)
-
+            print(text,"line 136")
             # Removing user information from server
             # os.remove()
             clean_dir(dir_path)

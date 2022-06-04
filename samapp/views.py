@@ -2,7 +2,6 @@ from django.shortcuts import render
 from .forms import ImageForm
 from importlib.metadata import metadata
 import cv2
-import string
 import os
 
 # ------------------------------------------------------
@@ -134,49 +133,6 @@ def embed(vessel_image, target_image, src_file, passcode):
     # save back the image
     cv2.imwrite(target_image, mem_image)
 
-
-def extract(emb_image, passcode):
-    # load the image in memory
-    mem_img = cv2.imread(emb_image)
-    qty_to_extract = 30  # of header
-
-    width = mem_img.shape[1]
-    indx = 0
-    buffer = ''
-    temp = []
-    while indx < qty_to_extract:
-        r = indx // width
-        c = indx % width
-        temp.clear()
-        for i in range(3):  # 0,1,2
-            temp.append(mem_img[r, c, 2-i] & 2 ** (3 - (i+1) // 3) - 1)
-
-        buffer += chr(merge_bits(temp))
-        indx += 1
-
-    buffer = crypt(buffer, passcode)
-
-    qty_to_extract = int(buffer[:10].strip('*')) + 30
-    file_name = buffer[10:].strip('*')
-
-    indx = 30
-    temp = []
-    file_handle = open('extracted_data.txt', 'wb')
-
-    while indx < qty_to_extract:
-        r = indx // width
-        c = indx % width
-        temp.clear()
-        for i in range(3):  # 0,1,2
-            temp.append(mem_img[r, c, 2-i] & 2 ** (3 - (i+1) // 3) - 1)
-
-        x = int(merge_bits(temp))
-
-        file_handle.write(int.to_bytes(x, 1, "big"))
-        indx += 1
-
-    file_handle.close()
-
 # ------------------------------------------------------
 
 
@@ -187,14 +143,14 @@ def index(request):
 
 def image_upload_view(request):
     """Process images uploaded by users"""
-
+    dir_path = r'.//media//images//'
+    clean_dir(dir_path)
     if request.method == 'POST':
         form = ImageForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
 
             # Encrypting raw image
-            dir_path = r'.//media//images//'
             raw_img_path = dir_path+img_names(dir_path)[0]
             enc_img_path = "encrypted_img.png"       #png is necessary for decryption to work
             data = form.cleaned_data['Data']
