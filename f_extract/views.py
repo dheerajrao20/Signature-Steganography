@@ -63,6 +63,11 @@ def crypt(src, key):
         i = (i+1) % l
     return crypted
 
+def read(file_name):
+    file_handle = open(file_name, 'r')
+    text=file_handle.read()
+    file_handle.close()
+    return text
 
 def extract_data(emb_image, passcode):
     #load the image in memory
@@ -113,12 +118,7 @@ def extract_data(emb_image, passcode):
         indx+=1
     file_handle.close()
 
-    
-    file_handle = open(file_name, 'r')
-    text=file_handle.read()
-    print(text)
-    file_handle.close()
-    return text
+    return read(file_name)
 
 
 
@@ -136,9 +136,8 @@ def extract(request):
             password = form2.cleaned_data['Password']
 
             text=extract_data(enc_img_path,password)
-            print(text,"line 136")
             # Removing user information from server
-            # os.remove()
+            os.remove('data.txt')
             clean_dir(dir_path)
             
             #--------------------------------------------
