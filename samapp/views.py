@@ -1,5 +1,9 @@
 from django.shortcuts import render
-from .forms import ImageForm
+from .forms import ImageForm, ImageExt
+import cv2
+import string
+import os
+
 
 def index(request):
     
@@ -13,9 +17,75 @@ def image_upload_view(request):
         form = ImageForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
+            password = form.cleaned_data['Password']
+            data = form.cleaned_data['Data']
+            # =======
+            d = {}
+            c = {}
+
+            for i in range(255):
+                d[chr(i)] = i
+                c[i] = chr(i)
+
+            x = cv2.imread("./media/images/test_img.jpg")
+            
+            i = x.shape[0]
+            j = x.shape[1]
+
+            key = password
+            text = data
+
+            kl = 0
+            tln = len(text)
+
+            z=0
+            n=0
+            m=0
+            l=len(text)
+
+            for i in range(l):
+                x[n,m,z]=d[text[i]]^d[key[kl]]
+                n=n+1
+                m=m+1
+                m=(m+1)%3
+                kl=(kl+1)%len(key)
+
+            cv2.imwrite("encrypted_img.jpg",x) 
+            os.startfile("encrypted_img.jpg")
+
+            kl =0
+            tln = len(text)
+            z=0
+            n=0
+            m=0
+
+            decrypt=""
+            for i in range(l):
+                decrypt+=c[x[n,m,z]^d[key[kl]]]
+                n=n+1
+                m=m+1
+                m=(m+1)%3
+                kl=(kl+1)%len(key)
+
             # Get the current instance object to display in the template
             img_obj = form.instance
-            return render(request, 'upload.html', {'form': form, 'img_obj': img_obj})
+            return render(request, 'upload.html', { 'img_obj': img_obj,'data':data})
     else:
         form = ImageForm()
     return render(request, 'upload.html', {'form': form})
+
+
+def data_extract_view(request):
+    if request.method == 'POST':
+        form = ImageExt(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            password2 = form.cleaned_data['Password2']
+
+            img_obj = form.instance
+            return render(request, 'extract.html', {'form': form, 'img_obj': img_obj, 'password2':password2,})
+    else:
+        form = ImageForm()
+    # return render(request, 'upload.html', {'form': form})
+
+    return render(request, 'extract.html', {'form':form})

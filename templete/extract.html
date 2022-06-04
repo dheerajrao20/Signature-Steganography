@@ -6,10 +6,15 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <link rel="stylesheet" href="{% static './css/index.css' %}">
 </head>
 <body>
-    <button><a href="{% url 'image_upload_view' %}">Embed data in image</a></button>
-    <button><a href="{% url 'data_extract_view' %}">Extract data from image</a></button>
+    <!-- <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+         {{ form.as_p }}
+        <button type="submit">Extract</button>
+    </form>
+    <h1>{{ password2 }}</h1> -->
+    <h1>work in progress</h1>
+    
 </body>
 </html>

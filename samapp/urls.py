@@ -4,4 +4,5 @@ from samapp import views
 urlpatterns = [ 
     path('', views.index, name='index'),
     path('upload/', views.image_upload_view, name='image_upload_view'),
+    path('extract/', views.data_extract_view, name='data_extract_view'),
 ]
