@@ -1,8 +1,20 @@
 from django.shortcuts import render
-from .forms import ImageForm, ImageExt
+from .forms import ImageForm
+from importlib.metadata import metadata
 import cv2
 import string
 import os
+
+# ------------------------------------------------------
+# Functions
+
+
+def clean_dir(dir_path):
+    res = img_names(dir_path)
+
+    for i in range(0, len(res)):
+        os.remove(dir_path + res[i])
+
 
 def img_names(dir_path):
     res = []
@@ -14,89 +26,190 @@ def img_names(dir_path):
     return res
 
 
+def create_data_file(data):
+    path = 'media\data.txt'
+    file_handle = open(path, 'w')
+    file_handle.write(data)
+    file_handle.close
+    return path
+
+
+def spiltbyte(by):  # 011 000 01
+    first_three_bits = by >> 5
+    mid_three_bits = (by >> 2) & 7
+    last_two_bits = by & 3
+    return first_three_bits, mid_three_bits, last_two_bits
+
+
+def merge_bits(bits):  # [3,0, 1] => 97
+    return (((bits[0] << 3) | bits[1]) << 2) | bits[2]
+
+
+def getMetaData(file_to_embed):
+    if os.path.exists(file_to_embed):  # check that the file exists
+        # know the file size in bytes
+        file_size = os.path.getsize(file_to_embed)
+        if file_size > 9999999999:
+            return None  # More than the max support
+        # Pad * at the RHS to make it of length : 10
+        file_size = str(file_size).ljust(10, '*')
+        file_name = os.path.basename(file_to_embed)  # exclude the parent path
+        # Pad * at the RHS to make it of len 20, doesnt pad is len is already > 20
+        file_name = file_name.ljust(20, '*')
+        # reduce the len to 20 by slicing
+        file_name = file_name[len(file_name)-20:]
+        return file_size+file_name
+
+    else:
+        return None
+
+
+def crypt(src, key):
+    crypted = ''
+    i = 0
+    l = len(key)
+    for s in src:
+        crypted += chr(ord(s) ^ ord(key[i]))
+        i = (i+1) % l
+    return crypted
+
+
+def embed(vessel_image, target_image, src_file, passcode):
+    # load the vessel_image into memory
+    mem_image = cv2.imread(vessel_image)
+    # print(type(mem_image))
+    # print(mem_image.shape)
+
+    # form the metadata
+    header = getMetaData(src_file)
+    if header is None:
+        print(header)
+        print('Embedding not possible: File too big or not found')
+        return None
+
+    # know the total embedding size
+    total_embedding_size = os.path.getsize(src_file) + len(header)
+
+    # check: is embedding possible
+    embedding_capacity = mem_image.shape[0] * mem_image.shape[1]
+
+    if total_embedding_size > embedding_capacity:
+        print('Embedding not possible: File too big')
+        return None
+
+    # embed...
+
+    # encryt the header
+    header = crypt(header, passcode)
+
+    # fetch the data to embed
+    file_handle = open(src_file, 'rb')
+    buffer = file_handle.read()
+    file_handle.close()
+
+    indx = 0
+    width = mem_image.shape[1]
+    # embedding loop
+    while indx < total_embedding_size:
+        r = indx // width
+        c = indx % width
+        if indx < 30:  # len(header)
+            bits = spiltbyte(ord(header[indx]))
+        else:
+            bits = spiltbyte(buffer[indx - 30])
+
+        # Free 2,3,3 bits of the pixel
+        mem_image[r, c, 0] &= 252  # blue band
+        mem_image[r, c, 1] &= 248  # green band
+        mem_image[r, c, 2] &= 248  # red band
+
+        # Merge the bits into the bands
+        mem_image[r, c, 0] |= bits[2]  # blue band
+        mem_image[r, c, 1] |= bits[1]  # green band
+        mem_image[r, c, 2] |= bits[0]  # red band
+
+        # next val to embed
+        indx += 1
+
+    # save back the image
+    cv2.imwrite(target_image, mem_image)
+
+
+def extract(emb_image, passcode):
+    # load the image in memory
+    mem_img = cv2.imread(emb_image)
+    qty_to_extract = 30  # of header
+
+    width = mem_img.shape[1]
+    indx = 0
+    buffer = ''
+    temp = []
+    while indx < qty_to_extract:
+        r = indx // width
+        c = indx % width
+        temp.clear()
+        for i in range(3):  # 0,1,2
+            temp.append(mem_img[r, c, 2-i] & 2 ** (3 - (i+1) // 3) - 1)
+
+        buffer += chr(merge_bits(temp))
+        indx += 1
+
+    buffer = crypt(buffer, passcode)
+
+    qty_to_extract = int(buffer[:10].strip('*')) + 30
+    file_name = buffer[10:].strip('*')
+
+    indx = 30
+    temp = []
+    file_handle = open('extracted_data.txt', 'wb')
+
+    while indx < qty_to_extract:
+        r = indx // width
+        c = indx % width
+        temp.clear()
+        for i in range(3):  # 0,1,2
+            temp.append(mem_img[r, c, 2-i] & 2 ** (3 - (i+1) // 3) - 1)
+
+        x = int(merge_bits(temp))
+
+        file_handle.write(int.to_bytes(x, 1, "big"))
+        indx += 1
+
+    file_handle.close()
+
+# ------------------------------------------------------
+
+
 def index(request):
-    
+
     return render(request, 'index.html')
 
 
-    
 def image_upload_view(request):
     """Process images uploaded by users"""
-
-    # -----------------
-    dir_path = r'.//media//images//'
-    res=img_names(dir_path)
-
-    for i in range(0, len(res)):
-        os.remove(dir_path + res[i])
-
-    res.clear()
-    # -----------------
 
     if request.method == 'POST':
         form = ImageForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
 
-            password = form.cleaned_data['Password']
+            # Encrypting raw image
+            dir_path = r'.//media//images//'
+            raw_img_path = dir_path+img_names(dir_path)[0]
+            enc_img_path = "encrypted_img.png"       #png is necessary for decryption to work
             data = form.cleaned_data['Data']
-            # =======
-            d = {}
-            c = {}
+            data_file_path = create_data_file(data)
+            password = form.cleaned_data['Password']
 
-            for i in range(255):
-                d[chr(i)] = i
-                c[i] = chr(i)
+            embed(raw_img_path, enc_img_path, data_file_path, password)
 
-
-            # ---------------------- 
-            res=img_names(dir_path)
-            # -----------------------
-            img_name=res[0]
-            x = cv2.imread("./media/images/"+img_name)
-            
-            i = x.shape[0]
-            j = x.shape[1]
-
-            key = password
-            text = data
-
-            kl = 0
-            tln = len(text)
-
-            z=0
-            n=0
-            m=0
-            l=len(text)
-
-            for i in range(l):
-                x[n,m,z]=d[text[i]]^d[key[kl]]
-                n=n+1
-                m=m+1
-                m=(m+1)%3
-                kl=(kl+1)%len(key)
-
-            cv2.imwrite("encrypted_img.jpg",x) 
-# ----------------------------------------------------- 
-            os.startfile("encrypted_img.jpg")
-
-            kl =0
-            tln = len(text)
-            z=0
-            n=0
-            m=0
-
-            decrypt=""
-            for i in range(l):
-                decrypt+=c[x[n,m,z]^d[key[kl]]]
-                n=n+1
-                m=m+1
-                m=(m+1)%3
-                kl=(kl+1)%len(key)
+            # Removing user information from server
+            os.remove(data_file_path)
+            clean_dir(dir_path)
 
             # Get the current instance object to display in the template
             img_obj = form.instance
-            return render(request, 'upload.html', { 'img_obj': img_obj,'data':data})
+            return render(request, 'upload.html', {'img_obj': img_obj, 'data': data})
     else:
         form = ImageForm()
     return render(request, 'upload.html', {'form': form})
@@ -105,17 +218,7 @@ def image_upload_view(request):
 
 
 
-def data_extract_view(request):
-    if request.method == 'POST':
-        form = ImageExt(request.POST, request.FILES)
-        if form.is_valid():
-            form.save()
-            password2 = form.cleaned_data['Password2']
 
-            img_obj = form.instance
-            return render(request, 'extract.html', {'form': form, 'img_obj': img_obj, 'password2':password2,})
-    else:
-        form = ImageForm()
-    # return render(request, 'upload.html', {'form': form})
 
-    return render(request, 'extract.html', {'form':form})
+
+

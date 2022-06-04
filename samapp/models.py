@@ -8,10 +8,3 @@ class Image(models.Model):
     def __str__(self):
         return self.title
 
-
-class Extract(models.Model):
-    Password2 = models.CharField(max_length=20)
-    image2 = models.ImageField(upload_to='images', blank=True)
-
-    # def __str__(self):
-    #     return self.title
