@@ -1,67 +1,27 @@
-import cv2
-import string
 import os
-d={}
-c={}
 
-for i in range(255):
-    d[chr(i)]=i
-    c[i]=chr(i)
-  
-  
-#print(c)
 
-x=cv2.imread("./media/images/test_img.jpg")
+dir_path = r'.//media//images//'
 
-i=x.shape[0]
-j=x.shape[1]
+# list to store files
 
-key=input("Enter key to edit(Security Key) : ")
-text=input("Enter text to hide : ")
 
-kl=0
-tln=len(text)
-z=0 #decides plane
-n=0 #number of row
-m=0 #number of column
+def img_names(dir_path):
+    res = []
+    # Iterate directory
+    for path in os.listdir(dir_path):
+        # check if current path is a file
+        if os.path.isfile(os.path.join(dir_path, path)):
+            res.append(path)
+    return res
 
-l=len(text)
+res=img_names(dir_path)
 
-for i in range(l):
-    x[n,m,z]=d[text[i]]^d[key[kl]]
-    n=n+1
-    m=m+1
-    m=(m+1)%3 #this is for every value of z , remainder will be between 0,1,2 . i.e G,R,B plane will be set automatically.
-                #whatever be the value of z , z=(z+1)%3 will always between 0,1,2 . The same concept is used for random number in dice and card games.
-    kl=(kl+1)%len(key)
-    
-cv2.imwrite("encrypted_img.jpg",x) 
-os.startfile("encrypted_img.jpg")
-# print("Data Hiding in Image completed successfully.")
-#x=cv2.imread(“encrypted_img.jpg")
-    
+for i in range(0, len(res)):
+    os.remove(dir_path + res[i])
 
-kl=0
-tln=len(text)
-z=0 #decides plane
-n=0 #number of row
-m=0 #number of column
+res.clear()
 
-ch = int(input("\nEnter 1 to extract data from Image : "))
+res=img_names(dir_path)
 
-if ch == 1:
-    key1=input("\n\nRe enter key to extract text : ")
-    decrypt=""
-
-    if key == key1 :
-        for i in range(l):
-            decrypt+=c[x[n,m,z]^d[key[kl]]]
-            n=n+1
-            m=m+1
-            m=(m+1)%3
-            kl=(kl+1)%len(key)
-        print("Encrypted text was : ",decrypt)
-    else:
-        print("Key doesn't matched.")
-else:
-    print("Thank you. EXITING.")
+print(res)

@@ -4,6 +4,15 @@ import cv2
 import string
 import os
 
+def img_names(dir_path):
+    res = []
+    # Iterate directory
+    for path in os.listdir(dir_path):
+        # check if current path is a file
+        if os.path.isfile(os.path.join(dir_path, path)):
+            res.append(path)
+    return res
+
 
 def index(request):
     
@@ -13,10 +22,22 @@ def index(request):
     
 def image_upload_view(request):
     """Process images uploaded by users"""
+
+    # -----------------
+    dir_path = r'.//media//images//'
+    res=img_names(dir_path)
+
+    for i in range(0, len(res)):
+        os.remove(dir_path + res[i])
+
+    res.clear()
+    # -----------------
+
     if request.method == 'POST':
         form = ImageForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
+
             password = form.cleaned_data['Password']
             data = form.cleaned_data['Data']
             # =======
@@ -27,7 +48,12 @@ def image_upload_view(request):
                 d[chr(i)] = i
                 c[i] = chr(i)
 
-            x = cv2.imread("./media/images/test_img.jpg")
+
+            # ---------------------- 
+            res=img_names(dir_path)
+            # -----------------------
+            img_name=res[0]
+            x = cv2.imread("./media/images/"+img_name)
             
             i = x.shape[0]
             j = x.shape[1]
@@ -51,6 +77,7 @@ def image_upload_view(request):
                 kl=(kl+1)%len(key)
 
             cv2.imwrite("encrypted_img.jpg",x) 
+# ----------------------------------------------------- 
             os.startfile("encrypted_img.jpg")
 
             kl =0
@@ -73,6 +100,9 @@ def image_upload_view(request):
     else:
         form = ImageForm()
     return render(request, 'upload.html', {'form': form})
+
+
+
 
 
 def data_extract_view(request):
